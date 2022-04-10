@@ -2,6 +2,8 @@
 import scrapy
 from scrapy.crawler import CrawlerProcess
 from urllib.parse import urlencode
+import argparse
+
 
 # Create the Spider
 class AmazonSpider(scrapy.Spider):
@@ -33,8 +35,8 @@ class AmazonSpider(scrapy.Spider):
         """
         Send the request on a base link given
         """
-        base_link = 'https://www.amazon.in/s?k=ginger+powder&page='
-        for i in range(1,8):
+        base_link = f'https://www.amazon.{args.domain.lower()}/s?k={args.item.lower().strip().replace(" ", "+")}&page='
+        for i in range(1, args.page + 1):
             yield scrapy.Request(AmazonSpider.get_url(base_link + str(i)), meta = {'link':base_link + str(i)}, headers = self.headers, callback = self.parse)
 
     # Parse the response
@@ -69,6 +71,22 @@ class AmazonSpider(scrapy.Spider):
             }
 
 if __name__ == '__main__':
+    # Get the amazon link based on user options
+    parser = argparse.ArgumentParser(description='Amazon search result web scraper')
+
+    parser.add_argument("-i", "--item", help="Target the web scraper to the Amazon search of your product", required=True)
+    parser.add_argument("-d", "--domain", help="Assign the domain for your amazon search. Example, `in` for Indian Amazon domain https://www.amazon.in/. Defaults to `com`", default="com")
+    parser.add_argument("-p", "--page", help="Assign how many pages of the search result to scrape. Default is 5", default=5, type=int)
+
+    args = parser.parse_args()
+    domains = ['eg', 'br', 'ca', 'mx', 'com', 'cn', 'in', 'jp', 'sg', 'ae', 'sa', 'fr', 'de', 'it', 'nl', 'pl', 'es', 'tr', 'uk', 'au']
+
+    if args.page < 1:
+        raise Exception("Target pages to scrape must at least be 1.")
+    if args.domain.lower() not in domains:
+        raise Exception(f"Not a proper domain. The available ones are:\n\t-{', '.join(domains)}\nPlease see https://en.wikipedia.org/wiki/Amazon_(company)#Website for more info")
+
+
     # Start the web scraping
     process = CrawlerProcess({
         'FEED_URI': 'products.csv',
