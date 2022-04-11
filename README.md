@@ -8,4 +8,5 @@ python amazon.py --item "Ginger Powder" -page 5 -domain "in"
 
 Details to get include name, price, secondary price, previous price, discount, rating, review count, product link, and product thumbnail
 
-![Screenshot](img\Screenshot.PNG)
+![Screenshot](img/Screenshot.PNG)
+
